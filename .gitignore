@@ -1,1 +1,7 @@
-.exe
+# Ignorar archivos compilados
+*.exe
+
+# Ignorar archivos generados por el sistema
+*.log
+*.out
+*.bak
