@@ -58,7 +58,7 @@ void FreeList::printFreeList() const {
     if (!head) { std::cout << "  (vacía)\n\n"; return; }
     for (FreeBlock* cur = head; cur; cur = cur->next) {
         std::cout << "  Inicio: " << std::setw(4) << cur->start
-                  << "  Tamaño: " << std::setw(4) << cur->size << " bytes\n";
+                  << "  Tamano: " << std::setw(4) << cur->size << " bytes\n";
     }
     std::cout << std::endl;
 }
