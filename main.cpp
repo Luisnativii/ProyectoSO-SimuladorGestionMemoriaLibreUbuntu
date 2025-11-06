@@ -13,7 +13,7 @@ int main() {
     mem.printMap();
 
     //Datos de prueba quemados 
-    std::cout << "\n=== Prueba de Fusión ===\n";
+    std::cout << "\n=== Prueba de Fusion ===\n";
     mem.holes().clear();
     mem.holes().pushHoleSortedAndCoalesce(0, 20);
     mem.holes().pushHoleSortedAndCoalesce(20, 30); // fusiona → [0,50)
