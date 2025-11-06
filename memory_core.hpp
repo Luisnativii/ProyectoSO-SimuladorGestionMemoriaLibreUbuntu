@@ -24,6 +24,24 @@ public:
     void resetToSingleHole(size_t totalSize);
     void printFreeList() const;
     FreeBlock* getHead() const { return head; }
+
+    /**
+     * Busca el hueco en donde insertar un nuevo proceso según algoritmo primer ajuste.
+     * Retorna el primer hueco en el que cabe el proceso a insertar.
+     * @param size Tamaño en bytes del proceso a insertar
+     * @param prevOut Puntero que almacenará el nodo previo al hueco encontrado, para poder manejar la lista
+     * @return El hueco en que insertar el proceso según primer ajuste. Si no encontró ninguno, devuelve null
+    */
+    FreeBlock* findFirstFit(size_t size, FreeBlock*& prevOut);
+
+    /**
+     * Busca el hueco en donde insertar un nuevo proceso según algoritmo mejor ajuste.
+     * Retorna el hueco con el menor espacio en donde cabe el proceso a insertar.
+     * @param size Tamaño en bytes del proceso a insertar
+     * @param prevOut Puntero que almacenará el nodo previo al hueco encontrado, para poder manejar la lista
+     * @return El hueco en que insertar el proceso según mejor ajuste. Si no encontró ninguno, devuelve null
+    */
+    FreeBlock* findBestFit(size_t size, FreeBlock*& prevOut);
 };
 
 

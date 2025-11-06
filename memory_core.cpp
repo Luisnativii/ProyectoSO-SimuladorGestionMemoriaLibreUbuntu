@@ -63,6 +63,46 @@ void FreeList::printFreeList() const {
     std::cout << std::endl;
 }
 
+FreeBlock* FreeList::findFirstFit(size_t size, FreeBlock*& prevOut) {
+    FreeBlock* prev = nullptr;
+    FreeBlock* cur = head;
+
+    while (cur) {
+        if (cur->size >= size) {
+            prevOut = prev;
+            return cur;   // Retornar el primer hueco en el que cabe
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+
+    prevOut = nullptr;
+    return nullptr; // No encontró hueco, retornar null
+}
+
+FreeBlock* FreeList::findBestFit(size_t size, FreeBlock*& prevOut) {
+    FreeBlock* prev = nullptr;
+    FreeBlock* cur = head;
+
+    FreeBlock* best = nullptr;
+    FreeBlock* bestPrev = nullptr;
+
+    while (cur) {
+        // Buscar el hueco más pequeño donde cabe el proceso
+        if (cur->size >= size) {
+            if (!best || cur->size < best->size) {
+                best = cur;
+                bestPrev = prev;
+            }
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+
+    prevOut = bestPrev;
+    return best;  // Si no se encontró ningún hueco donde cabe, retorna null
+}
+
 //-------------------------- MemoryCore ------------------------------------------------
 void MemoryCore::init(size_t bytes) {
     totalSize = bytes;
