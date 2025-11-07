@@ -1,5 +1,6 @@
 #include "memory_core.hpp"
 #include <iomanip>
+#include <algorithm> // std::min
 
 FreeList::~FreeList() { clear(); }
 
@@ -103,6 +104,36 @@ FreeBlock* FreeList::findBestFit(size_t size, FreeBlock*& prevOut) {
     return best;  // Si no se encontró ningún hueco donde cabe, retorna null
 }
 
+// NUEVO: reservar desde la lista de huecos (divide o elimina el hueco)
+bool FreeList::allocate(size_t size, size_t& outStart, bool bestFit) {
+    outStart = static_cast<size_t>(-1);
+    if (size == 0) return false;
+
+    FreeBlock* prev = nullptr;
+    FreeBlock* hole = bestFit ? findBestFit(size, prev) : findFirstFit(size, prev);
+    if (!hole) return false;
+
+    outStart = hole->start;
+
+    if (hole->size == size) {
+        // Caso ajuste exacto: quitar el nodo
+        if (prev) prev->next = hole->next;
+        else head = hole->next;
+        delete hole;
+    } else {
+        // Dividir el hueco: reservar al inicio
+        hole->start += size;
+        hole->size  -= size;
+    }
+    return true;
+}
+
+// NUEVO: liberar región e insertar con coalescing
+void FreeList::release(size_t start, size_t size) {
+    if (size == 0) return;
+    pushHoleSortedAndCoalesce(start, size);
+}
+
 //-------------------------- MemoryCore ------------------------------------------------
 void MemoryCore::init(size_t bytes) {
     totalSize = bytes;
@@ -127,4 +158,27 @@ void MemoryCore::printMap(size_t columns) const {
     }
     if (ram.size() % columns != 0) std::cout << '\n';
     std::cout << std::endl;
+}
+
+
+bool MemoryCore::allocate(size_t size, size_t& outAddr, bool bestFit) {
+    outAddr = static_cast<size_t>(-1);
+    if (size == 0 || size > ram.size()) return false;
+
+    if (!freeList.allocate(size, outAddr, bestFit)) return false;
+
+    // Marcar región como ocupada (opcional, el mapa usa la free list)
+    const size_t end = std::min(ram.size(), outAddr + size);
+    for (size_t i = outAddr; i < end; ++i) ram[i] = 1;
+    return true;
+}
+
+bool MemoryCore::release(size_t start, size_t size) {
+    if (size == 0) return false;
+    if (start >= ram.size()) return false;
+    if (start + size > ram.size()) return false;
+
+    for (size_t i = start; i < start + size; ++i) ram[i] = 0;
+    freeList.release(start, size);
+    return true;
 }

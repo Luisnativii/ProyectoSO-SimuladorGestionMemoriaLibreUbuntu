@@ -42,6 +42,12 @@ public:
      * @return El hueco en que insertar el proceso según mejor ajuste. Si no encontró ninguno, devuelve null
     */
     FreeBlock* findBestFit(size_t size, FreeBlock*& prevOut);
+
+    // NUEVO: reservar desde la lista de huecos (primer/mejor ajuste)
+    bool allocate(size_t size, size_t& outStart, bool bestFit = false);
+
+    // NUEVO: liberar región y fusionar con adyacentes
+    void release(size_t start, size_t size);
 };
 
 
@@ -59,4 +65,7 @@ public:
 
     const FreeList& holes() const { return freeList; }
     FreeList& holes() { return freeList; }
+
+    bool allocate(size_t size, size_t& outAddr, bool bestFit = false);
+    bool release(size_t start, size_t size);
 };
