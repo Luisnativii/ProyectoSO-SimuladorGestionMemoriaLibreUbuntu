@@ -149,18 +149,72 @@ void MemoryCore::reset() {
 }
 
 void MemoryCore::printMap(size_t columns) const {
-    std::cout << "[Mapa de Memoria] (" << ram.size() << " bytes)\n";
-    std::vector<bool> isFree(ram.size(), false);
-    for (FreeBlock* cur = freeList.getHead(); cur; cur = cur->next) {
-        const size_t end = std::min(ram.size(), cur->start + cur->size);
-        for (size_t i = cur->start; i < end; ++i) isFree[i] = true;
+    // Códigos ANSI para colores
+    const std::string RESET = "\033[0m";
+    const std::string GREEN = "\033[32m";  // Libre
+    const std::string BLUE = "\033[34m";
+    const std::string YELLOW = "\033[33m";
+    const std::string RED = "\033[31m";
+    const std::string CYAN = "\033[36m";
+    const std::string MAGENTA = "\033[35m";
+    
+    std::vector<std::string> colors = {BLUE, YELLOW, RED, CYAN, MAGENTA};
+    
+    std::cout << "\n[Mapa de Memoria] (" << ram.size() << " bytes, " 
+              << columns << " bytes por fila)\n";
+    std::cout << std::string(columns + 10, '=') << "\n";
+    
+    std::vector<char> display(ram.size(), '.');
+    std::vector<int> colorIndex(ram.size(), -1);  // -1 = libre (verde)
+    
+    // Asignar color a cada proceso
+    int procIdx = 0;
+    for (const auto& proc : processes) {
+        char symbol = proc.name.empty() ? 'X' : proc.name[0];
+        int color = procIdx % colors.size();
+        
+        const size_t end = std::min(ram.size(), proc.start + proc.size);
+        for (size_t i = proc.start; i < end; ++i) {
+            display[i] = symbol;
+            colorIndex[i] = color;
+        }
+        procIdx++;
     }
+    
+    // Imprimir con colores
     for (size_t i = 0; i < ram.size(); ++i) {
-        std::cout << (isFree[i] ? '.' : '#');
-        if ((i + 1) % columns == 0) std::cout << '\n';
+        if (i % columns == 0) {
+            std::cout << std::setw(4) << i << " | ";
+        }
+        
+        // Aplicar color
+        if (colorIndex[i] == -1) {
+            std::cout << GREEN << display[i] << RESET;
+        } else {
+            std::cout << colors[colorIndex[i]] << display[i] << RESET;
+        }
+        
+        if ((i + 1) % columns == 0) {
+            std::cout << " | " << std::setw(4) << (i + 1) << "\n";
+        }
     }
-    if (ram.size() % columns != 0) std::cout << '\n';
-    std::cout << std::endl;
+    
+    if (ram.size() % columns != 0) {
+        size_t remaining = columns - (ram.size() % columns);
+        std::cout << std::string(remaining, ' ') 
+                  << " | " << std::setw(4) << ram.size() << "\n";
+    }
+    
+    std::cout << std::string(columns + 10, '=') << "\n";
+    std::cout << GREEN << "'.' = libre" << RESET;
+    
+    procIdx = 0;
+    for (const auto& proc : processes) {
+        std::cout << ", " << colors[procIdx % colors.size()] 
+                  << "'" << proc.name[0] << "' = " << proc.name << RESET;
+        procIdx++;
+    }
+    std::cout << "\n\n";
 }
 
 
