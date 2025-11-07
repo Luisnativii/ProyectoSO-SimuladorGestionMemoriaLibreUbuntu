@@ -50,6 +50,16 @@ public:
     void release(size_t start, size_t size);
 };
 
+// Representa un proceso cargado en memoria
+struct Process {
+    std::string name;    // Identificador del proceso (ej: "P1", "Chrome")
+    size_t start;        // Dirección de inicio en memoria
+    size_t size;         // Tamaño en bytes
+    
+    Process(const std::string& n, size_t s, size_t sz) 
+        : name(n), start(s), size(sz) {}
+};
+
 
 class MemoryCore {
 private:
@@ -57,6 +67,8 @@ private:
     //cada byte es representado por un uint8_t
     FreeList freeList;          // huecos libres
     size_t totalSize = 0;     // tamaño total de la RAM en bytes
+
+    std::vector<Process> processes; //Llevará la lista de procesos cargados en memoria
 
 public:
     void init(size_t bytes);    // un único hueco [0, bytes)
@@ -68,4 +80,15 @@ public:
 
     bool allocate(size_t size, size_t& outAddr, bool bestFit = false);
     bool release(size_t start, size_t size);
+
+    public:
+    //Reserva memoria y aloja el proceso
+    bool allocateProcess(const std::string& name, size_t size, bool bestFit = false); 
+    // Busca el proceso por nombre y lo libera de memoria
+    bool releaseProcess(const std::string& name);
+    //Método auxiliar para buscar un proceso por nombre
+    Process* findProcess(const std::string& name);
+    //Muestra una tabla con todos los procesos en memoria
+    void printProcesses() const;
+
 };
