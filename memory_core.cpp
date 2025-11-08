@@ -141,23 +141,80 @@ void MemoryCore::init(size_t bytes) {
     freeList.resetToSingleHole(totalSize); // un único hueco: toda la RAM
 }
 
+//Resetea la lista de huecos y limpia el registro de procesos
 void MemoryCore::reset() {
     freeList.resetToSingleHole(ram.size());
+    processes.clear();  //limpiar registro de procesos
+    std::fill(ram.begin(), ram.end(), 0);  //limpiar ram
 }
 
 void MemoryCore::printMap(size_t columns) const {
-    std::cout << "[Mapa de Memoria] (" << ram.size() << " bytes)\n";
-    std::vector<bool> isFree(ram.size(), false);
-    for (FreeBlock* cur = freeList.getHead(); cur; cur = cur->next) {
-        const size_t end = std::min(ram.size(), cur->start + cur->size);
-        for (size_t i = cur->start; i < end; ++i) isFree[i] = true;
+    // Códigos ANSI para colores
+    const std::string RESET = "\033[0m";
+    const std::string GREEN = "\033[32m";  // Libre
+    const std::string BLUE = "\033[34m";
+    const std::string YELLOW = "\033[33m";
+    const std::string RED = "\033[31m";
+    const std::string CYAN = "\033[36m";
+    const std::string MAGENTA = "\033[35m";
+    
+    std::vector<std::string> colors = {BLUE, YELLOW, RED, CYAN, MAGENTA};
+    
+    std::cout << "\n[Mapa de Memoria] (" << ram.size() << " bytes, " 
+              << columns << " bytes por fila)\n";
+    std::cout << std::string(columns + 10, '=') << "\n";
+    
+    std::vector<char> display(ram.size(), '.');
+    std::vector<int> colorIndex(ram.size(), -1);  // -1 = libre (verde)
+    
+    // Asignar color a cada proceso
+    int procIdx = 0;
+    for (const auto& proc : processes) {
+        char symbol = proc.name.empty() ? 'X' : proc.name[0];
+        int color = procIdx % colors.size();
+        
+        const size_t end = std::min(ram.size(), proc.start + proc.size);
+        for (size_t i = proc.start; i < end; ++i) {
+            display[i] = symbol;
+            colorIndex[i] = color;
+        }
+        procIdx++;
     }
+    
+    // Imprimir con colores
     for (size_t i = 0; i < ram.size(); ++i) {
-        std::cout << (isFree[i] ? '.' : '#');
-        if ((i + 1) % columns == 0) std::cout << '\n';
+        if (i % columns == 0) {
+            std::cout << std::setw(4) << i << " | ";
+        }
+        
+        // Aplicar color
+        if (colorIndex[i] == -1) {
+            std::cout << GREEN << display[i] << RESET;
+        } else {
+            std::cout << colors[colorIndex[i]] << display[i] << RESET;
+        }
+        
+        if ((i + 1) % columns == 0) {
+            std::cout << " | " << std::setw(4) << (i + 1) << "\n";
+        }
     }
-    if (ram.size() % columns != 0) std::cout << '\n';
-    std::cout << std::endl;
+    
+    if (ram.size() % columns != 0) {
+        size_t remaining = columns - (ram.size() % columns);
+        std::cout << std::string(remaining, ' ') 
+                  << " | " << std::setw(4) << ram.size() << "\n";
+    }
+    
+    std::cout << std::string(columns + 10, '=') << "\n";
+    std::cout << GREEN << "'.' = libre" << RESET;
+    
+    procIdx = 0;
+    for (const auto& proc : processes) {
+        std::cout << ", " << colors[procIdx % colors.size()] 
+                  << "'" << proc.name[0] << "' = " << proc.name << RESET;
+        procIdx++;
+    }
+    std::cout << "\n\n";
 }
 
 
@@ -181,4 +238,81 @@ bool MemoryCore::release(size_t start, size_t size) {
     for (size_t i = start; i < start + size; ++i) ram[i] = 0;
     freeList.release(start, size);
     return true;
+}
+
+//Implementaciones de los nuevos métodos para manejo de procesos
+
+// Recorre el vector buscando coincidencia de nombres. Retorna puntero al proceso o nullptr.
+Process* MemoryCore::findProcess(const std::string& name) {
+    for (auto& p : processes) {
+        if (p.name == name) return &p;
+    }
+    return nullptr;
+}
+
+// Primero valida que no exista duplicado, luego llama a la función allocate() existente, para reservar memoria 
+//y finalmente registra el proceso en el vector.
+
+bool MemoryCore::allocateProcess(const std::string& name, size_t size, bool bestFit) {
+    if (findProcess(name)) {
+        std::cout << "ERROR: El proceso '" << name << "' ya existe en memoria.\n";
+        return false;
+    }
+    
+    // Intentar asignar memoria usando la función existente
+    size_t addr;
+    if (!allocate(size, addr, bestFit)) {
+        std::cout << "ERROR: No hay suficiente memoria para '" << name 
+                  << "' (" << size << " bytes).\n";
+        return false;
+    }
+    
+    // Registrar el proceso
+    processes.emplace_back(name, addr, size);
+    std::cout << "✓ Proceso '" << name << "' asignado en dirección " 
+              << addr << " (" << size << " bytes)\n";
+    return true;
+}
+
+// Usa std::find_if para buscar por nombre, libera la memoria con release() existente, y borra del vector con erase().
+bool MemoryCore::releaseProcess(const std::string& name) {
+    // Buscar el proceso
+    auto it = std::find_if(processes.begin(), processes.end(),
+                           [&name](const Process& p) { return p.name == name; });
+    
+    if (it == processes.end()) {
+        std::cout << "ERROR: El proceso '" << name << "' no existe en memoria.\n";
+        return false;
+    }
+    
+    // Liberar su memoria
+    release(it->start, it->size);
+    
+    std::cout << "✓ Proceso '" << name << "' liberado (dirección " 
+              << it->start << ", " << it->size << " bytes)\n";
+    
+    // Remover del registro
+    processes.erase(it);
+    return true;
+}
+
+//Imprime tabla formateada con todos los procesos.
+void MemoryCore::printProcesses() const {
+    std::cout << "\n[Procesos Activos]\n";
+    if (processes.empty()) {
+        std::cout << "  (ninguno)\n";
+        return;
+    }
+    
+    std::cout << std::setw(15) << "Nombre" 
+              << std::setw(10) << "Inicio" 
+              << std::setw(10) << "Tamaño" << "\n";
+    std::cout << std::string(35, '-') << "\n";
+    
+    for (const auto& p : processes) {
+        std::cout << std::setw(15) << p.name
+                  << std::setw(10) << p.start
+                  << std::setw(10) << p.size << " bytes\n";
+    }
+    std::cout << std::endl;
 }
