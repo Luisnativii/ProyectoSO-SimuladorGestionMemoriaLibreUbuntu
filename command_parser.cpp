@@ -5,7 +5,7 @@
 void CommandParser::showWelcome() {
     std::cout << "\n";
     std::cout << "╔════════════════════════════════════════════════════════════╗\n";
-    std::cout << "║     SIMULADOR DE GESTIÓN DE MEMORIA FÍSICA                ║\n";
+    std::cout << "║     SIMULADOR DE GESTIÓN DE MEMORIA FÍSICA                 ║\n";
     std::cout << "╚════════════════════════════════════════════════════════════╝\n";
     std::cout << "\nAlgoritmo actual: " << (useBestFit ? "MEJOR AJUSTE" : "PRIMER AJUSTE") << "\n";
     std::cout << "\nComandos disponibles:\n";
