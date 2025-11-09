@@ -29,7 +29,7 @@ void DemoRunner::demo1_SecuenciaBasica() {
     std::cout << "\n\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     std::cout << "█                                                              █\n";
-    std::cout << "█          DEMO 1: SECUENCIA DE SOLICITUDES Y LIBERACIONES    █\n";
+    std::cout << "█          DEMO 1: SECUENCIA DE SOLICITUDES Y LIBERACIONES     █\n";
     std::cout << "█                                                              █\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     
@@ -90,15 +90,6 @@ void DemoRunner::demo1_SecuenciaBasica() {
     memory.holes().printFreeList();
     std::cout << " Observa: Dos huecos libres separados + el hueco al final\n";
     waitForUser();
-    
-    // ========== PASO 8 ==========
-    showStep("PASO 8: Solicitar 10 bytes para Firefox (Primer Ajuste)");
-    memory.allocateProcess("Firefox", 10, false);  // First fit
-    memory.printProcesses();
-    memory.printMap(32);
-    memory.holes().printFreeList();
-    std::cout << " Firefox ocupó el PRIMER hueco disponible (donde estaba VSCode)\n";
-    waitForUser();
 }
 
 // ============================================================================
@@ -108,7 +99,7 @@ void DemoRunner::demo2_Fusion() {
     std::cout << "\n\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     std::cout << "█                                                              █\n";
-    std::cout << "█          DEMO 2: FUSIÓN DE HUECOS ADYACENTES (COALESCING)  █\n";
+    std::cout << "█          DEMO 2: FUSIÓN DE HUECOS ADYACENTES (COALESCING)    █\n";
     std::cout << "█                                                              █\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     
@@ -187,7 +178,7 @@ void DemoRunner::demo3_ComparacionAlgoritmos() {
     std::cout << "\n\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     std::cout << "█                                                              █\n";
-    std::cout << "█     DEMO 3: PRIMER AJUSTE vs MEJOR AJUSTE (COMPARACIÓN)    █\n";
+    std::cout << "█     DEMO 3: PRIMER AJUSTE vs MEJOR AJUSTE (COMPARACIÓN)      █\n";
     std::cout << "█                                                              █\n";
     std::cout << "████████████████████████████████████████████████████████████████\n";
     
@@ -248,7 +239,7 @@ void DemoRunner::demo3_ComparacionAlgoritmos() {
     // ========================================================================
     std::cout << "\n";
     std::cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n";
-    std::cout << "┃                    PRUEBA A: PRIMER AJUSTE                   ┃\n";
+    std::cout << "┃                    PRUEBA A: PRIMER AJUSTE                 ┃\n";
     std::cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n";
     
     showStep("A1: Solicitar 10 bytes para Notion (PRIMER AJUSTE)");
@@ -290,7 +281,7 @@ void DemoRunner::demo3_ComparacionAlgoritmos() {
     // ========================================================================
     std::cout << "\n";
     std::cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n";
-    std::cout << "┃                    PRUEBA B: MEJOR AJUSTE                    ┃\n";
+    std::cout << "┃                    PRUEBA B: MEJOR AJUSTE                  ┃\n";
     std::cout << "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n";
     
     showStep("B1: Solicitar 10 bytes para Notion (MEJOR AJUSTE)");

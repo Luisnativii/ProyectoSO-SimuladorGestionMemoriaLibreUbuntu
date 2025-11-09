@@ -13,7 +13,7 @@ int main() {
     // Menú principal
     std::cout << "\n";
     std::cout << "╔══════════════════════════════════════════════════════════════╗\n";
-    std::cout << "║     SIMULADOR DE GESTIÓN DE MEMORIA FÍSICA                  ║\n";
+    std::cout << "║     SIMULADOR DE GESTIÓN DE MEMORIA FÍSICA                   ║\n";
     std::cout << "╚══════════════════════════════════════════════════════════════╝\n";
     std::cout << "\n¿Qué deseas hacer?\n";
     std::cout << "  1. Ejecutar DEMOSTRACIONES automáticas\n";
