@@ -19,10 +19,20 @@ private:
 
 public:
     ~FreeList();
+    /** Limpia la lista de espacios libres*/
     void clear();
+    /**
+     * Inserta un nuevo hueco en la lista, y si encuentra huecos adyacentes,
+     * los fusiona para formar un solo hueco.
+     * @param start Lugar de memoria en el que insertar el hueco
+     * @param size Tamaño del hueco a insertar
+     */
     void pushHoleSortedAndCoalesce(size_t start, size_t size);
+    /** Resetea la lista para crear un solo hueco del tamaño indicado */
     void resetToSingleHole(size_t totalSize);
+    /** Imprime la lista de espacios vacíos */
     void printFreeList() const;
+    /** Retorna la punta de la lista de huecos vacíos */
     FreeBlock* getHead() const { return head; }
 
     /**
