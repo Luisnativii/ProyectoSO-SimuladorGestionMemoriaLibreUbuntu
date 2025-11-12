@@ -53,11 +53,31 @@ public:
     */
     FreeBlock* findBestFit(size_t size, FreeBlock*& prevOut);
 
-    // NUEVO: reservar desde la lista de huecos (primer/mejor ajuste)
+    /**
+     * @brief Asigna un bloque de memoria desde la lista libre.
+     *
+     * Busca un hueco disponible usando *First Fit* o *Best Fit* según el parámetro.
+     * Si el hueco encaja exactamente, se elimina; si es mayor, se ajusta su tamaño.
+     *
+     * @param size Tamaño del bloque solicitado.
+     * @param outStart Dirección inicial asignada.
+     * @param bestFit Usa *Best Fit* si es true, *First Fit* si es false.
+     * @return true si se asignó memoria, false en caso contrario.
+     */
     bool allocate(size_t size, size_t& outStart, bool bestFit = false);
 
-    // NUEVO: liberar región y fusionar con adyacentes
+
+    /**
+     * @brief Libera un bloque de memoria previamente asignado.
+     *
+     * Agrega el bloque liberado a la lista de huecos libres y
+     * fusiona con huecos adyacentes si es posible.
+     *
+     * @param start Dirección inicial del bloque liberado.
+     * @param size Tamaño del bloque liberado.
+     */
     void release(size_t start, size_t size);
+
 };
 
 // Representa un proceso cargado en memoria

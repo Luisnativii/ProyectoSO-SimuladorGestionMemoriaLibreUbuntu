@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
+// Muestra el mensaje de bienvenida y la lista de comandos disponibles
 void CommandParser::showWelcome() {
     std::cout << "\n";
     std::cout << "╔════════════════════════════════════════════════════════════╗\n";
@@ -21,6 +22,7 @@ void CommandParser::showWelcome() {
     std::cout << "\n";
 }
 
+// Procesa un comando introducido por el usuario
 bool CommandParser::processCommand(const std::string& line) {
     if (line.empty()) return true;
     
@@ -57,6 +59,8 @@ bool CommandParser::processCommand(const std::string& line) {
     return true;
 }
 
+
+// Maneja el comando 'solicitar' para asignar memoria a un proceso
 void CommandParser::cmdSolicitar(std::istringstream& iss) {
     size_t size;
     std::string name;
@@ -77,6 +81,7 @@ void CommandParser::cmdSolicitar(std::istringstream& iss) {
     }
 }
 
+// Maneja el comando 'liberar' para liberar memoria de un proceso
 void CommandParser::cmdLiberar(std::istringstream& iss) {
     std::string name;
     
@@ -91,19 +96,24 @@ void CommandParser::cmdLiberar(std::istringstream& iss) {
     std::cout << "\n";
 }
 
+// Muestra el mapa visual de la memoria
 void CommandParser::cmdMapa() {
     memory.printMap(32);  // 32 bytes por fila
 }
 
+// Muestra la lista de huecos libres en memoria
 void CommandParser::cmdHuecos() {
     std::cout << "\n";
     memory.holes().printFreeList();
 }
 
+// Muestra la lista de procesos activos en memoria
 void CommandParser::cmdProcesos() {
     memory.printProcesses();
 }
 
+
+// Maneja el comando 'algoritmo' para cambiar el algoritmo de asignación
 void CommandParser::cmdAlgoritmo(std::istringstream& iss) {
     std::string algo;
     
@@ -127,12 +137,15 @@ void CommandParser::cmdAlgoritmo(std::istringstream& iss) {
     }
 }
 
+// Maneja el comando 'reset' para reiniciar la memoria
 void CommandParser::cmdReset() {
     std::cout << "\n→ Reiniciando memoria...\n";
     memory.reset();
     std::cout << "✓ Memoria reiniciada. Toda la memoria está libre.\n\n";
 }
 
+
+// Maneja el comando 'ayuda' para mostrar la ayuda
 void CommandParser::cmdAyuda() {
     showWelcome();
 }

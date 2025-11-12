@@ -1,5 +1,6 @@
 #include "demos.hpp"
 
+// Ejecuta todas las demos
 void DemoRunner::runAllDemos() {
     std::cout << "\n";
     std::cout << "╔══════════════════════════════════════════════════════════════╗\n";

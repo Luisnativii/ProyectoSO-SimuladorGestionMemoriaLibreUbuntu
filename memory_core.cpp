@@ -142,31 +142,49 @@ FreeBlock* FreeList::findBestFit(size_t size, FreeBlock*& prevOut) {
     return best;  // Si no se encontró ningún hueco donde cabe, retorna null
 }
 
-// NUEVO: reservar desde la lista de huecos (divide o elimina el hueco)
+// Función que intenta asignar un bloque de memoria dentro de la lista de huecos libres (FreeList)
 bool FreeList::allocate(size_t size, size_t& outStart, bool bestFit) {
+    // Inicializa la variable de salida con un valor inválido (-1)
     outStart = static_cast<size_t>(-1);
+
+    // Si se pide un tamaño cero, no tiene sentido asignar
     if (size == 0) return false;
 
+    // Punteros para recorrer la lista de huecos libres
     FreeBlock* prev = nullptr;
-    FreeBlock* hole = bestFit ? findBestFit(size, prev) : findFirstFit(size, prev);
+    FreeBlock* hole = bestFit
+        ? findBestFit(size, prev)   // Busca el mejor hueco (el más pequeño que quepa)
+        : findFirstFit(size, prev); // O el primer hueco disponible donde quepa
+
+    // Si no se encontró un hueco adecuado, no se puede asignar
     if (!hole) return false;
 
+    // Guarda la posición de inicio donde se va a asignar el bloque
     outStart = hole->start;
 
     if (hole->size == size) {
-        // Caso ajuste exacto: quitar el nodo
-        if (prev) prev->next = hole->next;
-        else head = hole->next;
-        delete hole;
+        // Caso 1: el hueco tiene el tamaño exacto solicitado
+        // El hueco se elimina completamente de la lista libre
+        if (prev)
+            prev->next = hole->next; // Enlaza el anterior con el siguiente
+        else
+            head = hole->next;       // Si era el primero, actualiza la cabeza de la lista
+
+        delete hole; // Libera el nodo del hueco eliminado
     } else {
-        // Dividir el hueco: reservar al inicio
-        hole->start += size;
-        hole->size  -= size;
+        // Caso 2: el hueco es más grande que lo solicitado
+        // Se asigna la parte inicial al proceso y se reduce el hueco
+        hole->start += size; // Mueve el inicio del hueco
+        hole->size  -= size; // Disminuye su tamaño
     }
+
+    // La asignación fue exitosa
     return true;
 }
 
-// NUEVO: liberar región e insertar con coalescing
+
+// libera una región a la lista de huecos y fusiona con huecos adyacentes.
+// No hace nada si size es cero.
 void FreeList::release(size_t start, size_t size) {
     if (size == 0) return;
     pushHoleSortedAndCoalesce(start, size);
