@@ -4,45 +4,66 @@
 
 FreeList::~FreeList() { clear(); }
 
-//limpair la lista de huecos libres o liberar memoria
+//limpiar la lista de huecos libres o liberar memoria
 void FreeList::clear() {
+    // Recorrer la lista
     while (head) {
+        // Almacenar el nodo actual
         FreeBlock* tmp = head;
         head = head->next;
+        // Elimina el nodo actual
         delete tmp;
     }
 }
 
+// Inserta un nuevo hueco y fusiona espacios adyacentes
 void FreeList::pushHoleSortedAndCoalesce(size_t start, size_t size) {
+    // Finalizar si se intenta insertar un espacio de tamaño 0
     if (size == 0) return;
-    FreeBlock* node = new FreeBlock(start, size);
+    FreeBlock* node = new FreeBlock(start, size); // Nuevo hueco a insertar
 
     // Inserción ordenada por dirección
+    // Si no hay punta o el nuevo nodo se encuentra antes que la punta
     if (!head || start < head->start) {
-        node->next = head;
-        head = node;
+        node->next = head; // El nuevo nodo apuntará a la punta
+        head = node; // La nueva punta de la lista es el nodo a insertar
     } else {
+        // Inicializar puntero para recorrer lista
         FreeBlock* cur = head;
+        // Recorrer la lista hasta encontrar la posición de inicio del nuevo nodo
         while (cur->next && cur->next->start < start) cur = cur->next;
+        // Inserta nuevo hueco en la posición encontrada
         node->next = cur->next;
         cur->next = node;
     }
 
     // Fusión hacia adelante
+    // Si el nuevo hueco tiene un hueco siguiente y este inicia donde termina el nuevo hueco
     if (node->next && node->start + node->size == node->next->start) {
+        // Obtener el hueco a fusionar con el nuevo
         FreeBlock* nxt = node->next;
+        // Actualizar el tamaño del nuevo nodo 
         node->size += nxt->size;
+        // Actualizar enlace del nuevo nodo
         node->next = nxt->next;
+        // Eliminar hueco fusionado
         delete nxt;
     }
 
     // Fusión hacia atrás
+    // Si hay elementos antes del nuevo hueco
     if (head != node) {
+        // Puntero para recorrer la lista
         FreeBlock* prev = head;
+        // Encontrar el nodo anterior al nuevo hueco insertado
         while (prev && prev->next != node) prev = prev->next;
+        // Si el hueco anterior termina donde empieza el nuevo hueco
         if (prev && prev->start + prev->size == node->start) {
+            // Actualizar el tamaño del hueco anterior
             prev->size += node->size;
+            // Actualizar enlace de nodo anterior
             prev->next = node->next;
+            // Eliminar el hueco fusionado
             delete node;
         }
     }
@@ -50,13 +71,18 @@ void FreeList::pushHoleSortedAndCoalesce(size_t start, size_t size) {
 
 //resetar la memoria al inicilizar 
 void FreeList::resetToSingleHole(size_t totalSize) {
+    // limpia la lista actual
     clear();
+    // Crea una nueva lista con un solo hueco del tamaño indicado
     if (totalSize > 0) head = new FreeBlock(0, totalSize);
 }
 
 void FreeList::printFreeList() const {
     std::cout << "[Lista de Huecos Libres]\n";
+    // Enviar mensaje si la lista de huecos está vacía
     if (!head) { std::cout << "  (vacía)\n\n"; return; }
+
+    // Recorrer la lista de huecos, imprimiendo el inicio y tamaño de cada hueco
     for (FreeBlock* cur = head; cur; cur = cur->next) {
         std::cout << "  Inicio: " << std::setw(4) << cur->start
                   << "  Tamano: " << std::setw(4) << cur->size << " bytes\n";
@@ -64,15 +90,20 @@ void FreeList::printFreeList() const {
     std::cout << std::endl;
 }
 
+// Implementación del algoritmo de primer ajuste
 FreeBlock* FreeList::findFirstFit(size_t size, FreeBlock*& prevOut) {
+    // Punteros para recorrer la lista de espacios vacíos
     FreeBlock* prev = nullptr;
     FreeBlock* cur = head;
 
+    // Recorre la lista de espacios vacíos
     while (cur) {
+        // Si encuentra un hueco que cumpla con el tamaño
         if (cur->size >= size) {
             prevOut = prev;
             return cur;   // Retornar el primer hueco en el que cabe
         }
+        // Actualiza punteros para recorrer lista
         prev = cur;
         cur = cur->next;
     }
@@ -81,25 +112,32 @@ FreeBlock* FreeList::findFirstFit(size_t size, FreeBlock*& prevOut) {
     return nullptr; // No encontró hueco, retornar null
 }
 
+// Implementación de algoritmo de mejor ajuste
 FreeBlock* FreeList::findBestFit(size_t size, FreeBlock*& prevOut) {
+    // Punteros para recorrer la lista
     FreeBlock* prev = nullptr;
     FreeBlock* cur = head;
 
-    FreeBlock* best = nullptr;
-    FreeBlock* bestPrev = nullptr;
+    FreeBlock* best = nullptr; // Puntero del mejor candidato encontrado
+    FreeBlock* bestPrev = nullptr; // El nodo anterior al mejor candidato
 
+    // Recorrer la lista de huecos
     while (cur) {
-        // Buscar el hueco más pequeño donde cabe el proceso
+        // Si el proceso cabe en el hueco actual
         if (cur->size >= size) {
+            // Si no está definido un mejor hueco o si el hueco actual es más pequeño que el mejor hueco hasta ahora
             if (!best || cur->size < best->size) {
+                // Actualiza los punteros del mejor hueco
                 best = cur;
                 bestPrev = prev;
             }
         }
+        // Actualiza punteros para recorrer lista
         prev = cur;
         cur = cur->next;
     }
 
+    // Asigna la referencia del hueco anterior al mejor candidato
     prevOut = bestPrev;
     return best;  // Si no se encontró ningún hueco donde cabe, retorna null
 }
